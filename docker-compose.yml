@@ -1,0 +1,75 @@
+version: '2'
+services:
+    signup:
+        build: ./signup
+        container_name: signup
+        ports:
+            - 3001
+        depends_on:
+            - sharelatex
+        links:
+            - sharelatex
+
+    nginx:
+        build: ./nginx
+        container_name: nginx
+        ports:
+            - 443:443
+            - 80:80
+        depends_on:
+            - sharelatex
+            - signup
+        links:
+            - sharelatex
+            - signup
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+            - /home/sharelatex/tmp:/etc/nginx/certs
+
+    sharelatex:
+        restart: always
+        image: sharelatex/sharelatex
+        container_name: sharelatex
+        depends_on:
+            - mongo
+            - redis
+        privileged: true
+        ports:
+            - 80
+        links:
+            - mongo
+            - redis
+        volumes:
+            - ~/sharelatex_data:/var/lib/sharelatex
+        environment:
+            SHARELATEX_MONGO_URL: mongodb://mongo/sharelatex
+            SHARELATEX_REDIS_HOST: redis
+            SHARELATEX_APP_NAME: ShareLaTeX IITK
+            VIRTUAL_HOST: 172.27.32.20
+            SHARELATEX_SITE_URL: https://172.27.32.20
+            SHARELATEX_NAV_TITLE: ShareLaTeX IITK
+            SHARELATEX_ADMIN_EMAIL: sysad.iitk@gmail.com
+            SHARELATEX_EMAIL_FROM_ADDRESS: "sysad.iitk@gmail.com"
+            SHARELATEX_EMAIL_SMTP_HOST: smtp.gmail.com
+            SHARELATEX_EMAIL_SMTP_PORT: 465
+            SHARELATEX_EMAIL_SMTP_SECURE: "true"
+            SHARELATEX_EMAIL_SMTP_IGNORE_TLS: "true"
+        env_file:
+            - .envfile
+    mongo:
+        restart: always
+        image: mongo
+        container_name: mongo
+        expose:
+            - 27017
+        volumes:
+            - ~/mongo_data:/data/db
+
+    redis:
+        restart: always
+        image: redis
+        container_name: redis
+        expose:
+            - 6379
+        volumes:
+            - ~/redis_data:/data
