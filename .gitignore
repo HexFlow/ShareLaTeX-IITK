@@ -1,1 +1,3 @@
 .envfile
+/nginx/nginx.crt
+/nginx/nginx.key

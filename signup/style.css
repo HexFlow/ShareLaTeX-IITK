@@ -55,6 +55,10 @@ size2 {
     width: 100%;
 }
 
+img {
+    max-width: 100%;
+}
+
 .myb {
     margin-left: 20px;
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
